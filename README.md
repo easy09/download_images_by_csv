@@ -10,4 +10,5 @@ get images's url from csv file,then download them.
 - run commond
 ```
 php run.php -yourcsv.csv
+php run.php -yourcsv.csv -p http://yourwebsite.com/image_path
 ```

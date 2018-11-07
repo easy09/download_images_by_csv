@@ -18,9 +18,11 @@ function get_image_byurl($url, $filename = "")
     if ($filename == "") {
         $filename = time() . "_" . rand(100000, 999999) . $ext;
     }
-    $write_fd = @fopen($filename, "a");
-    @fwrite($write_fd, CurlGet($url));
-    @fclose($write_fd);
+    if (!file_exists($filename)) {
+        $write_fd = @fopen($filename, "a");
+        @fwrite($write_fd, CurlGet($url));
+        @fclose($write_fd);
+    }
     return ($filename);
 }
 
@@ -49,7 +51,7 @@ function CurlGet($url)
  * download
  * @param $csv
  */
-function downloadJpgFromCsv($csv, $prefix = '')
+function downloadPicFromCsv($csv, $prefix = '', $start = 0)
 {
     $root = __DIR__ . '/dir_' . $csv;
     if (!file_exists($root)) {
@@ -63,7 +65,7 @@ function downloadJpgFromCsv($csv, $prefix = '')
         $data = fgetcsv($file);
         if (is_array($data)) {
             foreach ($data as $key => $url) {
-                if (strstr($url, '.jpg')) {
+                if (strstr($url, '.jpg') || strstr($url, '.png') || strstr($url, '.gif') || strstr($url, '.bmp')) {
                     $tmp = explode('/', $url);
                     $newFileName = array_pop($tmp);
                     $path = $root . '/' . $key;
@@ -73,20 +75,22 @@ function downloadJpgFromCsv($csv, $prefix = '')
                     }
                     $imgname = $path . '/' . $newFileName;
                     if (strtolower(substr($url, 0, 4)) != 'http') {
-                        if($prefix){
+                        if ($prefix) {
                             $url = $prefix . $url;
-                        }else{
+                        } else {
                             exit("URL must start with http,may be you need to add the param -p");
                         }
                     }
-                    $command = "php run.php -f $csv -i $imgname -u $url";
-                    $comm[] = popen($command . " &", 'r');
                     $i++;
-                    if ($i % 100 == 1) {
-                        echo ($i) . " files downloaded!\n";
-                        while ($comm) {
-                            $c = array_shift($comm);
-                            pclose($c);
+                    if ($i > $start) {
+                        $command = "php run.php -f $csv -i $imgname -u $url";
+                        $comm[] = popen($command . " &", 'r');
+                        if ($i % 100 == 1) {
+                            echo ($i) . " files downloaded!\n";
+                            while ($comm) {
+                                $c = array_shift($comm);
+                                pclose($c);
+                            }
                         }
                     }
                 }
@@ -105,17 +109,21 @@ function downloadJpgFromCsv($csv, $prefix = '')
 
 set_time_limit(0);
 ini_set('memory_limit', '4096M');
-$argv = getopt('f:p:u:i:');
+$argv = getopt('f:p:u:i:s:');
 
 $file = isset($argv['f']) ? trim($argv['f']) : '';
 $url = isset($argv['u']) ? trim($argv['u']) : '';
 $imgname = isset($argv['i']) ? trim($argv['i']) : '';
 $prefix = isset($argv['p']) ? trim($argv['p']) : '';
+$start = isset($argv['s']) ? intval($argv['s']) : 0;
 if (!$file) {
     echo "-f csv file name \n";
     echo "-p the url prefix \n";
+    echo "-s the start number,if download stopped,you can restart from the start number \n";
     echo "php run.php -f yourcsv.csv\n";
-    exit("php run.php -f yourcsv.csv -p http://www.yourwebsite.com/image_path");
+    echo "php run.php -f yourcsv.csv -s 19001";
+    echo "php run.php -f yourcsv.csv -p http://www.yourwebsite.com/image_path";
+    exit;
 }
 if ($url && $imgname) {
     if (strtolower(substr($url, 0, 4)) != 'http') {
@@ -137,4 +145,5 @@ if ($prefix) {
     $prefix = substr($prefix, -1) == '/' ? $prefix : $prefix . '/';
 }
 echo "start download {$file}\n";
-downloadJpgFromCsv($file, $prefix);
+echo "start number = " . $start;
+downloadPicFromCsv($file, $prefix, $start);

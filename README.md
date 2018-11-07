@@ -8,7 +8,21 @@ get images's url from csv file,then download them.
 - If the data in the table is not appropriate, maybe you need to generate a view
 - explort csv file from datebase
 - run commond
+
+## params
 ```
-php run.php -yourcsv.csv
-php run.php -yourcsv.csv -p http://yourwebsite.com/image_path
+    -f csv file name
+    -p the url prefix
+    -s the start number,if download stopped,you can restart from the start number
+```
+## Example:
+```
+php run.php -f yourcsv.csv
+php run.php -f yourcsv.csv -s 19001
+php run.php -f yourcsv.csv -p http://www.yourwebsite.com/image_path
+```
+### Note:
+```
+1.Only download .png/.jpg/.bmp/.gif file
+2.If file exist,download will jump it
 ```

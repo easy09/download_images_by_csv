@@ -117,12 +117,16 @@ $imgname = isset($argv['i']) ? trim($argv['i']) : '';
 $prefix = isset($argv['p']) ? trim($argv['p']) : '';
 $start = isset($argv['s']) ? intval($argv['s']) : 0;
 if (!$file) {
-    echo "-f csv file name \n";
-    echo "-p the url prefix \n";
-    echo "-s the start number,if download stopped,you can restart from the start number \n";
+    echo "    -f csv file name \n";
+    echo "    -p the url prefix \n";
+    echo "    -s the start number,if download stopped,you can restart from the start number \n";
+    echo "Example:\n";
     echo "php run.php -f yourcsv.csv\n";
-    echo "php run.php -f yourcsv.csv -s 19001";
-    echo "php run.php -f yourcsv.csv -p http://www.yourwebsite.com/image_path";
+    echo "php run.php -f yourcsv.csv -s 19001\n";
+    echo "php run.php -f yourcsv.csv -p http://www.yourwebsite.com/image_path\n";
+    echo "Note:\n";
+    echo "1.Only download .png/.jpg/.bmp/.gif file\n";
+    echo "2.If file exist,download will jump it\n";
     exit;
 }
 if ($url && $imgname) {
@@ -145,5 +149,7 @@ if ($prefix) {
     $prefix = substr($prefix, -1) == '/' ? $prefix : $prefix . '/';
 }
 echo "start download {$file}\n";
-echo "start number = " . $start;
+if ($start) {
+    echo "start from number = " . $start . '\n';
+}
 downloadPicFromCsv($file, $prefix, $start);
